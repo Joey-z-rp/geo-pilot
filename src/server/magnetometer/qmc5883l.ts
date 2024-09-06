@@ -1,3 +1,5 @@
+// Based on https://github.com/mrstas/compass-QMC5883L
+
 import * as i2c from "i2c-bus";
 
 const QMC5883L_ADDR = 0x0d;
