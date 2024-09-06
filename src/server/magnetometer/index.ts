@@ -1,8 +1,3 @@
-export const magnetometer = {
-  onData: (cb: (data: { x: number; y: number; z: number }) => void) => {
-    setInterval(
-      () => cb({ x: Math.random(), y: Math.random(), z: Math.random() }),
-      1000
-    );
-  },
-};
+import { QMC5883L } from "./qmc5883l";
+
+export const magnetometer = new QMC5883L({ i2cBusNumber: 0 });

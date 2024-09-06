@@ -4,7 +4,7 @@ import { useEffect } from "react";
 import useWebSocket from "react-use-websocket";
 
 export default function Calibration() {
-  const { lastJsonMessage } = useWebSocket("ws://localhost:8001");
+  const { lastJsonMessage } = useWebSocket(`ws://${location.hostname}:8001`);
 
   useEffect(() => {
     fetch("/api/magnetometer/calibration");
