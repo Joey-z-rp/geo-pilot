@@ -1,3 +1,10 @@
-import { QMC5883L } from "./qmc5883l";
-
-export const magnetometer = new QMC5883L({ i2cBusNumber: 1 });
+export const magnetometer =
+  process.platform === "darwin"
+    ? {
+        getRawValues: () => ({
+          x: Math.random() * 10000,
+          y: Math.random() * 10000,
+          z: Math.random() * 10000,
+        }),
+      }
+    : new (require("./qmc5883l").QMC5883L)({ i2cBusNumber: 1 });
