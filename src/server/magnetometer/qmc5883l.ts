@@ -118,20 +118,22 @@ export class QMC5883L {
     };
   }
 
-  getCalibratedValues() {
-    if (!this.isReady()) return {};
-
-    const rawValues = Object.values(this.getRawValues()) as number[];
-    const subtractedBias = math.subtract(rawValues, this.calibrationData.bias);
+  getRawAndCalibratedValues() {
+    const rawValues = this.getRawValues()
+    const rawValueArray = Object.values(rawValues) as number[];
+    const subtractedBias = math.subtract(rawValueArray, this.calibrationData.bias);
     const calibrated = math.multiply(
       this.calibrationData.transformationMatrix,
       subtractedBias
     );
 
     return {
-      x: calibrated[0],
-      y: calibrated[1],
-      z: calibrated[2],
+      raw: rawValues,
+      calibrated: {
+        x: calibrated[0],
+        y: calibrated[1],
+        z: calibrated[2],
+      }
     };
   }
 
