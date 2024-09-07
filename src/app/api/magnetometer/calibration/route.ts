@@ -12,11 +12,12 @@ export async function POST(req: Request) {
 
   if (action === "start") {
     timer = setInterval(() => {
-      const readings = magnetometer.getRawAndCalibratedValues()
+      const readings = magnetometer.getHeading();
       const data = {
         raw: readings.raw,
         calibrated: readings.calibrated,
-      }
+        heading: readings.heading,
+      };
 
       sendWebSocketMessage({
         type: "magnetometer-data",

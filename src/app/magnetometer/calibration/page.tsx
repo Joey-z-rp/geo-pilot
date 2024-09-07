@@ -31,6 +31,7 @@ export default function Calibration() {
       y: [0],
       z: [0],
     },
+    heading: 0,
   });
   const timeRef = useRef([0]);
 
@@ -48,6 +49,7 @@ export default function Calibration() {
           y: [...existing.calibrated.y, data.calibrated.y!],
           z: [...existing.calibrated.z, data.calibrated.z!],
         },
+        heading: data.heading!,
       }));
       timeRef.current.push(timeRef.current[timeRef.current.length - 1] + 1);
     }
@@ -81,6 +83,7 @@ export default function Calibration() {
         y: {Math.round(dataPoints.raw.y[dataPoints.raw.y.length - 1])}
         z: {Math.round(dataPoints.raw.z[dataPoints.raw.z.length - 1])}
       </div>
+      <div>Heading: {dataPoints.heading}</div>
       <div>{connectionStatus[readyState]}</div>
       <Plot
         data={[
@@ -96,7 +99,7 @@ export default function Calibration() {
               opacity: 0.5,
             },
             type: "scatter3d" as const,
-            name: "Raw"
+            name: "Raw",
           },
           {
             ...dataPoints.calibrated,
@@ -110,7 +113,7 @@ export default function Calibration() {
               opacity: 0.8,
             },
             type: "scatter3d" as const,
-            name: "Calibrated"
+            name: "Calibrated",
           },
         ]}
         layout={{

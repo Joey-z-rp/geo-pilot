@@ -68,15 +68,20 @@ export class QMC5883L {
 
   private calibrationData: CalibrationData;
 
+  private declination: number;
+
   constructor({
     i2cBusNumber,
     calibrationData,
+    declination,
   }: {
     i2cBusNumber: number;
     calibrationData: CalibrationData;
+    declination: number;
   }) {
     this.i2cBus = i2c.openSync(i2cBusNumber);
     this.calibrationData = calibrationData;
+    this.declination = declination;
 
     try {
       this.i2cBus.receiveByteSync(QMC5883L_ADDR);
@@ -119,9 +124,12 @@ export class QMC5883L {
   }
 
   getRawAndCalibratedValues() {
-    const rawValues = this.getRawValues()
+    const rawValues = this.getRawValues();
     const rawValueArray = Object.values(rawValues) as number[];
-    const subtractedBias = math.subtract(rawValueArray, this.calibrationData.bias);
+    const subtractedBias = math.subtract(
+      rawValueArray,
+      this.calibrationData.bias
+    );
     const calibrated = math.multiply(
       this.calibrationData.transformationMatrix,
       subtractedBias
@@ -133,7 +141,19 @@ export class QMC5883L {
         x: calibrated[0],
         y: calibrated[1],
         z: calibrated[2],
-      }
+      },
+    };
+  }
+
+  getHeading() {
+    const data = this.getRawAndCalibratedValues();
+    const azimuth =
+      (Math.atan2(data.calibrated.y, data.calibrated.x) * 180) / Math.PI;
+    const heading = azimuth + this.declination;
+
+    return {
+      ...data,
+      heading,
     };
   }
 
