@@ -20,4 +20,5 @@ export const magnetometer =
     : new (require("./qmc5883l").QMC5883L)({
         i2cBusNumber: 1,
         calibrationData,
+        declination: 11.13
       });

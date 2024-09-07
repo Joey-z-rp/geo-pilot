@@ -149,7 +149,7 @@ export class QMC5883L {
     const data = this.getRawAndCalibratedValues();
     const azimuth =
       (Math.atan2(data.calibrated.y, data.calibrated.x) * 180) / Math.PI;
-    const heading = azimuth + this.declination;
+    const heading = (azimuth + this.declination + 360) % 360;
 
     return {
       ...data,
