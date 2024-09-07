@@ -1,8 +1,15 @@
 export type WebSocketMessage = {
   type: "magnetometer-data";
   data: {
-    x?: number;
-    y?: number;
-    z?: number;
+    raw: {
+      x?: number;
+      y?: number;
+      z?: number;
+    };
+    calibrated: {
+      x?: number;
+      y?: number;
+      z?: number;
+    };
   };
 };

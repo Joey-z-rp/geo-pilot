@@ -14,9 +14,12 @@ export async function POST(req: Request) {
     timer = setInterval(() => {
       sendWebSocketMessage({
         type: "magnetometer-data",
-        data: magnetometer.getRawValues(),
+        data: {
+          raw: magnetometer.getRawValues(),
+          calibrated: magnetometer.getCalibratedValues(),
+        },
       });
-    }, 1000);
+    }, 200);
   }
 
   return Response.json({});

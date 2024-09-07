@@ -2,8 +2,10 @@
 
 import Plot from "react-plotly.js";
 import { WebSocketMessage } from "@/shared/web-socket/messages";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import useWebSocket, { ReadyState } from "react-use-websocket";
+
+const MAX_CHART_DATA_POINTS = 100;
 
 const connectionStatus = {
   [ReadyState.UNINSTANTIATED]: "uninstantiated",
@@ -19,19 +21,35 @@ export default function Calibration() {
     { retryOnError: true }
   );
   const [dataPoints, setDataPoints] = useState({
-    x: [0],
-    y: [0],
-    z: [0],
+    raw: {
+      x: [0],
+      y: [0],
+      z: [0],
+    },
+    calibrated: {
+      x: [0],
+      y: [0],
+      z: [0],
+    },
   });
+  const timeRef = useRef([0]);
 
   useEffect(() => {
     const data = (lastJsonMessage as WebSocketMessage)?.data;
-    if (data?.x) {
+    if (data?.raw.x) {
       setDataPoints((existing) => ({
-        x: [...existing.x, data.x!],
-        y: [...existing.y, data.y!],
-        z: [...existing.z, data.z!],
+        raw: {
+          x: [...existing.raw.x, data.raw.x!],
+          y: [...existing.raw.y, data.raw.y!],
+          z: [...existing.raw.z, data.raw.z!],
+        },
+        calibrated: {
+          x: [...existing.calibrated.x, data.calibrated.x!],
+          y: [...existing.calibrated.y, data.calibrated.y!],
+          z: [...existing.calibrated.z, data.calibrated.z!],
+        },
       }));
+      timeRef.current.push(timeRef.current[timeRef.current.length - 1] + 1);
     }
   }, [lastJsonMessage]);
 
@@ -59,15 +77,15 @@ export default function Calibration() {
         Stop
       </button>
       <div>
-        x: {dataPoints.x[dataPoints.x.length - 1]}
-        y: {dataPoints.y[dataPoints.y.length - 1]}
-        z: {dataPoints.z[dataPoints.z.length - 1]}
+        x: {Math.round(dataPoints.raw.x[dataPoints.raw.x.length - 1])}
+        y: {Math.round(dataPoints.raw.y[dataPoints.raw.y.length - 1])}
+        z: {Math.round(dataPoints.raw.z[dataPoints.raw.z.length - 1])}
       </div>
       <div>{connectionStatus[readyState]}</div>
       <Plot
         data={[
           {
-            ...dataPoints,
+            ...dataPoints.raw,
             mode: "markers" as const,
             marker: {
               size: 5,
@@ -78,6 +96,36 @@ export default function Calibration() {
               opacity: 0.8,
             },
             type: "scatter3d" as const,
+          },
+        ]}
+        layout={{
+          margin: {
+            l: 0,
+            r: 0,
+            b: 0,
+            t: 0,
+          },
+        }}
+      />
+      <Plot
+        data={[
+          {
+            x: timeRef.current.slice(-MAX_CHART_DATA_POINTS),
+            y: dataPoints.calibrated.x.slice(-MAX_CHART_DATA_POINTS),
+            mode: "lines",
+            name: "X",
+          },
+          {
+            x: timeRef.current.slice(-MAX_CHART_DATA_POINTS),
+            y: dataPoints.calibrated.y.slice(-MAX_CHART_DATA_POINTS),
+            mode: "lines",
+            name: "Y",
+          },
+          {
+            x: timeRef.current.slice(-MAX_CHART_DATA_POINTS),
+            y: dataPoints.calibrated.z.slice(-MAX_CHART_DATA_POINTS),
+            mode: "lines",
+            name: "Z",
           },
         ]}
         layout={{

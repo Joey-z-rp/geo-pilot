@@ -1,6 +1,7 @@
 // Based on https://github.com/mrstas/compass-QMC5883L
 
 import * as i2c from "i2c-bus";
+import * as math from "mathjs";
 
 const QMC5883L_ADDR = 0x0d;
 
@@ -58,11 +59,24 @@ const twosComplement = (value: number, bits: number) => {
   return value;
 };
 
+type CalibrationData = {
+  transformationMatrix: [number[], number[], number[]];
+  bias: number[];
+};
 export class QMC5883L {
   private i2cBus: i2c.I2CBus;
 
-  constructor({ i2cBusNumber }: { i2cBusNumber: number }) {
+  private calibrationData: CalibrationData;
+
+  constructor({
+    i2cBusNumber,
+    calibrationData,
+  }: {
+    i2cBusNumber: number;
+    calibrationData: CalibrationData;
+  }) {
     this.i2cBus = i2c.openSync(i2cBusNumber);
+    this.calibrationData = calibrationData;
 
     try {
       this.i2cBus.receiveByteSync(QMC5883L_ADDR);
@@ -101,6 +115,23 @@ export class QMC5883L {
       x: read(0),
       y: read(2),
       z: read(4),
+    };
+  }
+
+  getCalibratedValues() {
+    if (!this.isReady()) return {};
+
+    const rawValues = Object.values(this.getRawValues()) as number[];
+    const subtractedBias = math.subtract(rawValues, this.calibrationData.bias);
+    const calibrated = math.multiply(
+      this.calibrationData.transformationMatrix,
+      subtractedBias
+    );
+
+    return {
+      x: calibrated[0],
+      y: calibrated[1],
+      z: calibrated[2],
     };
   }
 
