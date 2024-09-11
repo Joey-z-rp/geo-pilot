@@ -16,6 +16,7 @@ export async function POST(req: Request) {
       const data = {
         raw: readings.raw,
         calibrated: readings.calibrated,
+        processed: readings.processed,
         heading: readings.heading,
       };
 

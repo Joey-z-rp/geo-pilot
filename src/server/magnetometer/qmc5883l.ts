@@ -2,6 +2,7 @@
 
 import * as i2c from "i2c-bus";
 import * as math from "mathjs";
+import { OneDimentionalKalmanFilter } from "../utils/kalman-filters/1-d-kalman-filter";
 
 const QMC5883L_ADDR = 0x0d;
 
@@ -30,7 +31,7 @@ const QMC5883L_STATUS_DOR = 4;
 const QMC5883L_CONFIG_STANDBY = 0b00000000;
 const QMC5883L_CONFIG_CONT = 0b00000001;
 
-const DEFAULT_OVERSAMPLING = 64;
+const DEFAULT_OVERSAMPLING = 128;
 const oversamplingMap = {
   512: 0b00000000,
   256: 0b01000000,
@@ -62,6 +63,11 @@ const twosComplement = (value: number, bits: number) => {
 type CalibrationData = {
   transformationMatrix: [number[], number[], number[]];
   bias: number[];
+  variances: {
+    x: number;
+    y: number;
+    z: number;
+  };
 };
 export class QMC5883L {
   private i2cBus: i2c.I2CBus;
@@ -69,6 +75,14 @@ export class QMC5883L {
   private calibrationData: CalibrationData;
 
   private declination: number;
+
+  private initialVectorLength: number | undefined;
+
+  private xFilter: OneDimentionalKalmanFilter;
+
+  private yFilter: OneDimentionalKalmanFilter;
+
+  private zFilter: OneDimentionalKalmanFilter;
 
   constructor({
     i2cBusNumber,
@@ -82,6 +96,25 @@ export class QMC5883L {
     this.i2cBus = i2c.openSync(i2cBusNumber);
     this.calibrationData = calibrationData;
     this.declination = declination;
+    this.initialVectorLength = undefined;
+    this.xFilter = new OneDimentionalKalmanFilter({
+      initialEstimate: 0,
+      initialProcessError: 1,
+      processNoise: 1,
+      measurementNoise: Math.pow(calibrationData.variances.x, 2),
+    });
+    this.yFilter = new OneDimentionalKalmanFilter({
+      initialEstimate: 0,
+      initialProcessError: 1,
+      processNoise: 1,
+      measurementNoise: Math.pow(calibrationData.variances.y, 2),
+    });
+    this.zFilter = new OneDimentionalKalmanFilter({
+      initialEstimate: 0,
+      initialProcessError: 1,
+      processNoise: 1,
+      measurementNoise: Math.pow(calibrationData.variances.z, 2),
+    });
 
     try {
       this.i2cBus.receiveByteSync(QMC5883L_ADDR);
@@ -123,32 +156,45 @@ export class QMC5883L {
     };
   }
 
-  getRawAndCalibratedValues() {
+  stablise([x, y, z]: [number, number, number]) {
+    if (this.initialVectorLength === undefined) {
+      this.initialVectorLength = Math.sqrt(x * x + y * y + z * z);
+    }
+    const currentVectorLength = Math.sqrt(x * x + y * y + z * z);
+    const factor = this.initialVectorLength / currentVectorLength;
+
+    return { x: x * factor, y: y * factor, z: z * factor };
+  }
+
+  getProcessedValues() {
     const rawValues = this.getRawValues();
     const rawValueArray = Object.values(rawValues) as number[];
     const subtractedBias = math.subtract(
       rawValueArray,
       this.calibrationData.bias
     );
-    const calibrated = math.multiply(
-      this.calibrationData.transformationMatrix,
-      subtractedBias
+    const calibrated = this.stablise(
+      math.multiply(
+        this.calibrationData.transformationMatrix,
+        subtractedBias
+      ) as [number, number, number]
     );
 
     return {
       raw: rawValues,
-      calibrated: {
-        x: calibrated[0],
-        y: calibrated[1],
-        z: calibrated[2],
+      calibrated,
+      processed: {
+        x: this.xFilter.process(calibrated.x),
+        y: this.yFilter.process(calibrated.y),
+        z: this.zFilter.process(calibrated.y),
       },
     };
   }
 
   getHeading() {
-    const data = this.getRawAndCalibratedValues();
+    const data = this.getProcessedValues();
     const azimuth =
-      (Math.atan2(data.calibrated.y, data.calibrated.x) * 180) / Math.PI;
+      (Math.atan2(data.processed.y, data.processed.x) * 180) / Math.PI;
     const heading = (azimuth + this.declination + 360) % 360;
 
     return {

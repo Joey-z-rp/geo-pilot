@@ -5,4 +5,9 @@ export const calibrationData = {
     [-0.032, -0.009, 1.203],
   ],
   bias: [-313.977, 1505.303, -59.465],
+  variances: {
+    x: 100,
+    y: 100,
+    z: 100,
+  },
 };

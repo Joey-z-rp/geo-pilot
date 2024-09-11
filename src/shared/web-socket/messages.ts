@@ -11,6 +11,11 @@ export type WebSocketMessage = {
       y?: number;
       z?: number;
     };
+    processed: {
+      x?: number;
+      y?: number;
+      z?: number;
+    };
     heading?: number;
   };
 };
