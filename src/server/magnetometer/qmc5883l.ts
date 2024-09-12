@@ -100,19 +100,19 @@ export class QMC5883L {
     this.xFilter = new OneDimentionalKalmanFilter({
       initialEstimate: 0,
       initialProcessError: 1,
-      processNoise: 1,
+      processNoise: 1000000,
       measurementNoise: Math.pow(calibrationData.variances.x, 2),
     });
     this.yFilter = new OneDimentionalKalmanFilter({
       initialEstimate: 0,
       initialProcessError: 1,
-      processNoise: 1,
+      processNoise: 1000000,
       measurementNoise: Math.pow(calibrationData.variances.y, 2),
     });
     this.zFilter = new OneDimentionalKalmanFilter({
       initialEstimate: 0,
       initialProcessError: 1,
-      processNoise: 1,
+      processNoise: 1000000,
       measurementNoise: Math.pow(calibrationData.variances.z, 2),
     });
 
@@ -186,7 +186,7 @@ export class QMC5883L {
       processed: {
         x: this.xFilter.process(calibrated.x),
         y: this.yFilter.process(calibrated.y),
-        z: this.zFilter.process(calibrated.y),
+        z: this.zFilter.process(calibrated.z),
       },
     };
   }

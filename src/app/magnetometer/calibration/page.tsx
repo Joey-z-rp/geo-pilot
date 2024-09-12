@@ -106,9 +106,14 @@ export default function Calibration() {
         {Math.round(dataPoints.raw.z[dataPoints.raw.z.length - 1])}
       </div>
       <div>
-        X variance: {calculateVariance(dataPoints.calibrated.x)} Y variance:{" "}
-        {calculateVariance(dataPoints.calibrated.y)} Z variance:{" "}
-        {calculateVariance(dataPoints.calibrated.z)}
+        x calibrated: {Math.round(dataPoints.calibrated.x[dataPoints.calibrated.x.length - 1])} y calibrated:{" "}
+        {Math.round(dataPoints.calibrated.y[dataPoints.calibrated.y.length - 1])} z calibrated:{" "}
+        {Math.round(dataPoints.calibrated.z[dataPoints.calibrated.z.length - 1])}
+      </div>
+      <div>
+        X variance: {calculateVariance(dataPoints.calibrated.x.slice(1))} Y variance:{" "}
+        {calculateVariance(dataPoints.calibrated.y.slice(1))} Z variance:{" "}
+        {calculateVariance(dataPoints.calibrated.z.slice(1))}
       </div>
       <div>Heading: {dataPoints.heading}</div>
       <div>{connectionStatus[readyState]}</div>

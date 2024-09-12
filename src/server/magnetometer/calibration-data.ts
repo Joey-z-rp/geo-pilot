@@ -6,8 +6,8 @@ export const calibrationData = {
   ],
   bias: [-313.977, 1505.303, -59.465],
   variances: {
-    x: 100,
-    y: 100,
-    z: 100,
+    x: 2500,
+    y: 2500,
+    z: 2500,
   },
 };

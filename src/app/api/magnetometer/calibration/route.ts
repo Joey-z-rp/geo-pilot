@@ -24,7 +24,7 @@ export async function POST(req: Request) {
         type: "magnetometer-data",
         data,
       });
-    }, 200);
+    }, 100);
   }
 
   return Response.json({});
