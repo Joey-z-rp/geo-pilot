@@ -1,4 +1,4 @@
-import { magnetometer } from "@/server/magnetometer";
+import { magnetometer } from "@/server/sensors";
 import { sendWebSocketMessage } from "@/server/web-socket";
 
 let timer: NodeJS.Timeout;

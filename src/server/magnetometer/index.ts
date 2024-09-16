@@ -1,6 +1,7 @@
+import { I2CBus } from "i2c-bus";
 import { calibrationData } from "./calibration-data";
 
-export const magnetometer =
+export const getMagnetometer = (i2cBus: I2CBus) =>
   process.platform === "darwin"
     ? {
         getHeading: () => ({
@@ -23,7 +24,7 @@ export const magnetometer =
         }),
       }
     : new (require("./qmc5883l").QMC5883L)({
-        i2cBusNumber: 1,
+        i2cBus,
         calibrationData,
         declination: 11.13,
       });

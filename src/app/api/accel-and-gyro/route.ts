@@ -1,4 +1,4 @@
-import { gps } from "@/server/sensors";
+import { accelAndGyro } from "@/server/sensors";
 
 let timer: NodeJS.Timeout;
 
@@ -8,9 +8,9 @@ export async function GET() {
   }
 
   timer = setInterval(() => {
-    const state = gps.getGpsState();
-    console.log(state);
-  }, 500);
+    const readings = accelAndGyro.getReadings();
+    console.log(readings);
+  }, 100);
 
   return Response.json({});
 }

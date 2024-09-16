@@ -1,6 +1,6 @@
 // Based on https://github.com/mrstas/compass-QMC5883L
 
-import * as i2c from "i2c-bus";
+import { I2CBus } from "i2c-bus";
 import * as math from "mathjs";
 import { OneDimentionalKalmanFilter } from "../utils/kalman-filters/1-d-kalman-filter";
 
@@ -70,7 +70,7 @@ type CalibrationData = {
   };
 };
 export class QMC5883L {
-  private i2cBus: i2c.I2CBus;
+  private i2cBus: I2CBus;
 
   private calibrationData: CalibrationData;
 
@@ -85,15 +85,15 @@ export class QMC5883L {
   private zFilter: OneDimentionalKalmanFilter;
 
   constructor({
-    i2cBusNumber,
+    i2cBus,
     calibrationData,
     declination,
   }: {
-    i2cBusNumber: number;
+    i2cBus: I2CBus;
     calibrationData: CalibrationData;
     declination: number;
   }) {
-    this.i2cBus = i2c.openSync(i2cBusNumber);
+    this.i2cBus = i2cBus;
     this.calibrationData = calibrationData;
     this.declination = declination;
     this.initialVectorLength = undefined;
