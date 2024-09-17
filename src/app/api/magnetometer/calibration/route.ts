@@ -1,4 +1,4 @@
-import { magnetometer } from "@/server/sensors";
+import { mainMagnetometer, motorMagnetometer } from "@/server/sensors";
 import { sendWebSocketMessage } from "@/server/web-socket";
 
 let timer: NodeJS.Timeout;
@@ -12,7 +12,9 @@ export async function POST(req: Request) {
 
   if (action === "start") {
     timer = setInterval(() => {
-      const readings = magnetometer.getHeading();
+      const readings = mainMagnetometer.getHeading();
+      const motorReadings = motorMagnetometer.getHeading();
+      console.log({ readings, motorReadings });
       const data = {
         raw: readings.raw,
         calibrated: readings.calibrated,

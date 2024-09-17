@@ -1,4 +1,4 @@
-import { accelAndGyro, magnetometer } from "@/server/sensors";
+import { accelAndGyro, mainMagnetometer } from "@/server/sensors";
 
 let timer: NodeJS.Timeout;
 
@@ -9,7 +9,7 @@ export async function GET() {
 
   timer = setInterval(() => {
     const readings = accelAndGyro.getReadings();
-    const magReadings = magnetometer.getHeading();
+    const magReadings = mainMagnetometer.getHeading();
     console.log(readings, magReadings);
   }, 100);
 
